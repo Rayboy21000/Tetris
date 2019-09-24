@@ -1,6 +1,7 @@
 import random
 
 
+points = 0
 tetronimo_number = 0
 tetris_array_height = 15
 tetris_array_width = 9
@@ -75,6 +76,11 @@ class ZTetronimo:
             [0, 7, 7]
         ]
 
+class Coordinate:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
 
 create_choices = [
     StraightTetronimo,
@@ -143,23 +149,23 @@ def find_tetronimo_block_coordinates(array):
             if array[row][item] != 0:
                 if blocks_found == 0:
                     tetronimo = array[row][item]
-                    block1 = [row, item]
+                    block1 = Coordinate(item, row)
                     blocks_found += 1
                 elif blocks_found == 1:
-                    block2 = [row, item]
+                    block2 = Coordinate(item, row)
                     blocks_found += 1
                 elif blocks_found == 2:
-                    block3 = [row, item]
+                    block3 = Coordinate(item, row)
                     blocks_found += 1
                 elif blocks_found == 3:
-                    block4 = [row, item]
+                    block4 = Coordinate(item, row)
                     blocks_found += 1
     return block1, block2, block3, block4, tetronimo
 
 
 def check_block_right_single(block, array, tetronimo, all_true):
     if all_true:
-        if array[block[0]][block[1] + 1] != 0 and array[block[0]][block[1] + 1] != tetronimo:
+        if array[block.y][block.x + 1] != 0 and array[block.y][block.x + 1] != tetronimo:
             return False
         else:
             return True
@@ -169,7 +175,7 @@ def check_block_right_single(block, array, tetronimo, all_true):
 
 def check_block_left_single(block, array, tetronimo, all_true):
     if all_true:
-        if array[block[0]][block[1] - 1] != 0 and array[block[0]][block[1] - 1] != tetronimo:
+        if array[block.y][block.x - 1] != 0 and array[block.y][block.x - 1] != tetronimo:
             return False
         else:
             return True
@@ -179,7 +185,7 @@ def check_block_left_single(block, array, tetronimo, all_true):
 
 def check_block_below_single(block, array, tetronimo, all_true):
     if all_true:
-        if array[block[0] + 1][block[1]] != 0 and array[block[0] + 1][block[1]] != tetronimo:
+        if array[block.y + 1][block.x] != 0 and array[block.y + 1][block.x] != tetronimo:
             return False
         else:
             return True
@@ -190,7 +196,7 @@ def check_block_below_single(block, array, tetronimo, all_true):
 
 def check_block_below(block1, block2, block3, block4, array, tetronimo, height):
     all_true = True
-    if block1[0] + 1 == height or block2[0] + 1 == height or block3[0] + 1 == height or block4[0] + 1 == height:
+    if block1.y + 1 == height or block2.y + 1 == height or block3.y + 1 == height or block4.y + 1 == height:
         all_true = False
     all_true = check_block_below_single(block1, array, tetronimo, all_true)
     all_true = check_block_below_single(block2, array, tetronimo, all_true)
@@ -204,21 +210,18 @@ def check_block_below(block1, block2, block3, block4, array, tetronimo, height):
 
 def check_block_right(block1, block2, block3, block4, array, tetronimo, width):
     can_move_right = True
-    if block1[1] + 1 == width or block2[1] + 1 == width or block3[1] + 1 == width or block4[1] + 1 == width:
+    if block1.x + 1 == width or block2.x + 1 == width or block3.x + 1 == width or block4.x + 1 == width:
         can_move_right = False
     can_move_right = check_block_right_single(block1, array, tetronimo, can_move_right)
     can_move_right = check_block_right_single(block2, array, tetronimo, can_move_right)
     can_move_right = check_block_right_single(block3, array, tetronimo, can_move_right)
     can_move_right = check_block_right_single(block4, array, tetronimo, can_move_right)
-    if can_move_right:
-        return True
-    else:
-        return False
+    return can_move_right
 
 
 def check_block_left(block1, block2, block3, block4, array, tetronimo):
     can_move_left = True
-    if block1[1] == 0 or block2[1] == 0 or block3[1] == 0 or block4[1] == 0:
+    if block1.x == 0 or block2.x == 0 or block3.x == 0 or block4.x == 0:
         can_move_left = False
     can_move_left = check_block_left_single(block1, array, tetronimo, can_move_left)
     can_move_left = check_block_left_single(block2, array, tetronimo, can_move_left)
@@ -237,24 +240,24 @@ def move_tetronimo_down(tetronimo, block1, block2, block3, block4, array, array_
         for width in range(array_width):
             new_array[height].append(array[height][width])
     if check_block_below(block1, block2, block3, block4, array, tetronimo, array_height):
-        new_array[block1[0]][block1[1]] = 0
-        new_array[block2[0]][block2[1]] = 0
-        new_array[block3[0]][block3[1]] = 0
-        new_array[block4[0]][block4[1]] = 0
-        new_array[block1[0] + 1][block1[1]] = tetronimo
-        new_array[block2[0] + 1][block2[1]] = tetronimo
-        new_array[block3[0] + 1][block3[1]] = tetronimo
-        new_array[block4[0] + 1][block4[1]] = tetronimo
-        block1[0] += 1
-        block2[0] += 1
-        block3[0] += 1
-        block4[0] += 1
+        new_array[block1.y][block1.x] = 0
+        new_array[block2.y][block2.x] = 0
+        new_array[block3.y][block3.x] = 0
+        new_array[block4.y][block4.x] = 0
+        new_array[block1.y + 1][block1.x] = tetronimo
+        new_array[block2.y + 1][block2.x] = tetronimo
+        new_array[block3.y + 1][block3.x] = tetronimo
+        new_array[block4.y + 1][block4.x] = tetronimo
+        block1.y += 1
+        block2.y += 1
+        block3.y += 1
+        block4.y += 1
         return new_array, True, block1, block2, block3, block4
     else:
-        new_array[block1[0]][block1[1]] = -1*tetronimo
-        new_array[block2[0]][block2[1]] = -1*tetronimo
-        new_array[block3[0]][block3[1]] = -1*tetronimo
-        new_array[block4[0]][block4[1]] = -1*tetronimo
+        new_array[block1.y][block1.x] = -1*tetronimo
+        new_array[block2.y][block2.x] = -1*tetronimo
+        new_array[block3.y][block3.x] = -1*tetronimo
+        new_array[block4.y][block4.x] = -1*tetronimo
         return new_array, False, block1, block2, block3, block4# This means that the tetronomino cannot move down
 
 
@@ -265,18 +268,18 @@ def move_tetronimo_right(tetronimo, block1, block2, block3, block4, array, array
         for width in range(array_width):
             new_array[height].append(array[height][width])
     if check_block_right(block1, block2, block3, block4, array, tetronimo, array_width):
-        new_array[block1[0]][block1[1]] = 0
-        new_array[block2[0]][block2[1]] = 0
-        new_array[block3[0]][block3[1]] = 0
-        new_array[block4[0]][block4[1]] = 0
-        new_array[block1[0]][block1[1] + 1] = tetronimo
-        new_array[block2[0]][block2[1] + 1] = tetronimo
-        new_array[block3[0]][block3[1] + 1] = tetronimo
-        new_array[block4[0]][block4[1] + 1] = tetronimo
-        block1[1] += 1
-        block2[1] += 1
-        block3[1] += 1
-        block4[1] += 1
+        new_array[block1.y][block1.x] = 0
+        new_array[block2.y][block2.x] = 0
+        new_array[block3.y][block3.x] = 0
+        new_array[block4.y][block4.x] = 0
+        new_array[block1.y][block1.x + 1] = tetronimo
+        new_array[block2.y][block2.x + 1] = tetronimo
+        new_array[block3.y][block3.x + 1] = tetronimo
+        new_array[block4.y][block4.x + 1] = tetronimo
+        block1.x += 1
+        block2.x += 1
+        block3.x += 1
+        block4.x += 1
     return new_array, True, block1, block2, block3, block4
 
 
@@ -287,19 +290,23 @@ def move_tetronimo_left(tetronimo, block1, block2, block3, block4, array, array_
         for width in range(array_width):
             new_array[height].append(array[height][width])
     if check_block_left(block1, block2, block3, block4, array, tetronimo):
-        new_array[block1[0]][block1[1]] = 0
-        new_array[block2[0]][block2[1]] = 0
-        new_array[block3[0]][block3[1]] = 0
-        new_array[block4[0]][block4[1]] = 0
-        new_array[block1[0]][block1[1] - 1] = tetronimo
-        new_array[block2[0]][block2[1] - 1] = tetronimo
-        new_array[block3[0]][block3[1] - 1] = tetronimo
-        new_array[block4[0]][block4[1] - 1] = tetronimo
-        block1[1] -= 1
-        block2[1] -= 1
-        block3[1] -= 1
-        block4[1] -= 1
+        new_array[block1.y][block1.x] = 0
+        new_array[block2.y][block2.x] = 0
+        new_array[block3.y][block3.x] = 0
+        new_array[block4.y][block4.x] = 0
+        new_array[block1.y][block1.x - 1] = tetronimo
+        new_array[block2.y][block2.x - 1] = tetronimo
+        new_array[block3.y][block3.x - 1] = tetronimo
+        new_array[block4.y][block4.x - 1] = tetronimo
+        block1.x -= 1
+        block2.x -= 1
+        block3.x -= 1
+        block4.x -= 1
     return new_array, True, block1, block2, block3, block4
+
+
+def score_points(array, points):
+    all_filled = true
 
 
 while 1:
