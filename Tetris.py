@@ -1,7 +1,8 @@
 import random
 
 
-points = 0
+score = 0
+
 tetronimo_number = 0
 tetris_array_height = 15
 tetris_array_width = 9
@@ -102,9 +103,14 @@ def create_tetris_array(array, height, width):
     return array
 
 
-def create_shape(array, block_choices):
+def create_shape(array, block_choices, designated_shape):
     game_running = True
-    shape_type = random.choice(block_choices)
+    if designated_shape == 'SQ':
+        shape_type = SquareTetronimo
+    elif designated_shape == 'ST':
+        shape_type = StraightTetronimo
+    else:
+        shape_type = random.choice(block_choices)
     shape = shape_type()
 
     array_row = array[0]
@@ -305,19 +311,41 @@ def move_tetronimo_left(tetronimo, block1, block2, block3, block4, array, array_
     return new_array, True, block1, block2, block3, block4
 
 
-def score_points(array, points):
-    all_filled = true
+def check_array_for_points(array, points):
+    all_points_found = False
+    while not all_points_found:
+        point_scored = False
+        for row in array:
+            all_not_zero = True
+            for item in row:
+                if item == 0 and all_not_zero:
+                    all_not_zero = False
+            if all_not_zero:
+                point_scored = True
+                for i in range(len(array)-1, 1, -1):
+                    for j in range(len(array[i])):
+                        array[i][j] = array[i - 1][j]
+                points += 1
+        if not point_scored:
+            all_points_found = True
+        print(' All not zero ')
+        print(' all points found ')
+        print(all_points_found)
+        print_screen(array)
+    return array, points
 
 
 while 1:
-    input('Press enter to start')
+    score = 0
+    player_control = input('Press enter to start')
     game_running = True
     tetris_array = create_tetris_array(tetris_array, tetris_array_height, tetris_array_width)
-    tetris_array, tetronimo, game_running = create_shape(tetris_array, create_choices)
+    tetris_array, tetronimo, game_running = create_shape(tetris_array, create_choices, player_control)
     block1, block2, block3, block4, tetronimo_number = find_tetronimo_block_coordinates(tetris_array)
     tetronimo_moving = True
     while game_running:
         print_screen(tetris_array)
+        print(score)
         player_control = input().upper()
         if player_control == 'S':
             tetris_array, tetronimo_moving, block1, block2, block3, block4 = move_tetronimo_down(tetronimo_number, block1, block2, block3, block4, tetris_array, tetris_array_height, tetris_array_width)
@@ -326,7 +354,8 @@ while 1:
         elif player_control == 'D':
             tetris_array, tetronimo_moving, block1, block2, block3, block4 = move_tetronimo_right(tetronimo_number, block1, block2, block3, block4, tetris_array, tetris_array_height, tetris_array_width)
         if not tetronimo_moving:
-            tetris_array, tetronimo, game_running = create_shape(tetris_array, create_choices)
+            tetris_array, score = check_array_for_points(tetris_array, score)
+            tetris_array, tetronimo, game_running = create_shape(tetris_array, create_choices, player_control)
             block1, block2, block3, block4, tetronimo_number = find_tetronimo_block_coordinates(tetris_array)
             tetronimo_moving = True
     print('GAME OVER')
