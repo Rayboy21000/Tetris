@@ -73,6 +73,12 @@ class Coordinate:
         self.x = x
         self.y = y
 
+    def __add__(self, other):
+        return Coordinate(
+            self.x+other.x,
+            self.y+other.y
+        )
+
 
 create_choices = [
     StraightTetronimo,
@@ -171,13 +177,6 @@ def check_block_right(block, array, tetronimo, width):
     return can_move_right
 
 
-def check_block_left(block, array, tetronimo):
-    can_move_left = not (block[0].x == 0 or block[1].x == 0 or block[2].x == 0 or block[3].x == 0)
-    for i in range(4):
-        can_move_left = can_move_left and not (array[block[i].y][block[i].x - 1] != 0 and array[block[i].y][block[i].x - 1] != tetronimo)
-    return can_move_left
-
-
 def move_tetronimo_down(tetronimo, block, array, array_height):
     if check_block_below(block, array, tetronimo, array_height):
         for a in range(4):
@@ -204,14 +203,27 @@ def move_tetronimo_right(tetronimo, block, array, array_width):
     return array, True, block
 
 
-def move_tetronimo_left(tetronimo, block, array):
-    if check_block_left(block, array, tetronimo):
+def check_edge(block, array, tetronimo, edge, direction):
+    print(tetronimo)
+    can_move = not any(block[i].x == edge for i in range(4))
+    if can_move:
+        for i in range(4):
+            # if not can_move:
+            #     break
+            block_at_new_loc = array[block[i].y + direction[0]][block[i].x + direction[1]]
+            can_move = block_at_new_loc in [0, tetronimo]
+    return can_move
+
+
+def move_tetronimo(tetronimo, block, array, edge, direction):
+    if check_edge(block, array, tetronimo, edge, direction):
         for a in range(4):
             array[block[a].y][block[a].x] = 0
         for b in range(4):
-            array[block[b].y][block[b].x - 1] = tetronimo
+            array[block[b].y + direction[0]][block[b].x + direction[1]] = tetronimo
         for c in range(4):
-            block[c].x -= 1
+            block[c].x += direction[1]
+            block[c].y += direction[0]
     return array, True, block
 
 
@@ -247,12 +259,12 @@ while True:
     while game_running:
         print_screen(tetris_array, score)
         player_control = input().upper()
-        if player_control == 'S':
+        if player_control == 'S' or player_control == '':
             tetris_array, tetronimo_moving, block = move_tetronimo_down(tetronimo_number, block, tetris_array, TETRIS_ARRAY_HEIGHT)
         elif player_control == 'A':
-            tetris_array, tetronimo_moving, block = move_tetronimo_left(tetronimo_number, block, tetris_array)
+            tetris_array, tetronimo_moving, block = move_tetronimo(tetronimo_number, block, tetris_array, 0, [0, -1])
         elif player_control == 'D':
-            tetris_array, tetronimo_moving, block = move_tetronimo_right(tetronimo_number, block, tetris_array, TETRIS_ARRAY_WIDTH)
+            tetris_array, tetronimo_moving, block = move_tetronimo(tetronimo_number, block, tetris_array, TETRIS_ARRAY_WIDTH - 1, [0, 1])
         if not tetronimo_moving:
             tetris_array, score = trade_full_rows_for_points(tetris_array, score)
             tetris_array, tetronimo, game_running = create_shape(tetris_array, create_choices, player_control)
